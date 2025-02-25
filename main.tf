@@ -2,8 +2,14 @@ resource "aws_s3_bucket" "bucket" {
   bucket = var.bucket_name
 }
 
-resource "aws_s3_bucket_policy" "bucket_policy" {
+// Add time delay after public access block
+resource "time_sleep" "wait_for_public_access_block" {
   depends_on = [aws_s3_bucket_public_access_block.example]
+  create_duration = "10s"
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  depends_on = [aws_s3_bucket_public_access_block.example, time_sleep.wait_for_public_access_block]
 
   bucket = aws_s3_bucket.bucket.id
   policy = jsonencode(
